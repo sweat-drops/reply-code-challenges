@@ -2,6 +2,7 @@ import numpy as np
 from timeit import default_timer as timer
 
 filenames = ['1', '2', '3', '4']
+LOOPS = 5000
 
 # ====================
 # === INPUT PARSER ===
@@ -31,32 +32,34 @@ for filename in filenames:
             idProg += 1
     tabella = np.asarray(tabella)
     progetti = np.asarray(progetti)
-
-
+    
+    
     # ===================
     # === CALCULATION ===
     # ===================
     output = []
-    tBackup = tabella.copy()
     for p in progetti:
         units_needed = p[3:]          # Units needed for project p
         units_allocated = np.zeros(S) # Units allocated to project p
         tempOUT = []
         
         loop = True
+        tBackup = tabella.copy()
+        count = 0 # number of times looped
         
-        while loop and tabella.size > 0:
+        while loop and count < LOOPS and tabella.size > 0:
             loop = False
-            for indexU, u in enumerate(units_needed):
-                # If a unit is already satisfied go to the next one
-                if u <= units_allocated[indexU]: continue 
             
-                col = tabella[:, 4+indexU]
-                indexMax = np.argmax(col)
+            diff = units_needed - units_allocated
+            if any(diff > 0):
+                indexU = np.argmax(diff)
                 
-                tempOUT.append(tabella[indexMax, 0])
+                col = tabella[:, 4+indexU]
+                indexMax = np.argmax(col) 
+                
+                tempOUT.append("{} {}".format(int(tabella[indexMax, 0]), int(tabella[indexMax, 1])))
                 # Assign the units to the project
-                units_allocated +=  tabella[indexMax, 4:4+S]
+                units_allocated += tabella[indexMax, 4:4+S]
                 # Decrease the number of packages available for the provider
                 tabella[indexMax, 2] -= 1
                 
@@ -64,15 +67,17 @@ for filename in filenames:
                 if tabella.size == 0: break
                     
             # If there is at least one unit not satisfied reloop
-            if any(units_allocated < units_needed): loop = True
-
+            if any(units_allocated < units_needed): 
+                loop = True
+                count += 1
+    
         output.append(tempOUT)
         del tempOUT
-
+    
     output = [sorted(o) for o in output]
     print("Calc for {} done.".format(filename))
-
-
+    
+    
     # ==============
     # === OUTPUT ===
     # ==============
