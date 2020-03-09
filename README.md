@@ -1,7 +1,7 @@
-# Reply Code Challenge 2018
+# Reply Code Challenges
 
 <p align="center">
 	<img src="other/reply-corporate-logo.png">
 </p>
 
-`:sweat_drops:` team solution
+`:sweat_drops:` team solutions
